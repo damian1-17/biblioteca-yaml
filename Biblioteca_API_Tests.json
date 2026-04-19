@@ -1,0 +1,501 @@
+{
+  "info": {
+    "name": "Biblioteca API - Tests v3",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "id_autor", "value": "" },
+    { "key": "id_autor_libros", "value": "" },
+    { "key": "id_autor_prestamos", "value": "" },
+    { "key": "id_libro", "value": "" },
+    { "key": "id_libro_prestamos", "value": "" },
+    { "key": "id_usuario", "value": "" },
+    { "key": "id_usuario_prestamos", "value": "" },
+    { "key": "id_prestamo", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Autores",
+      "item": [
+        {
+          "name": "1. Listar todos los autores",
+          "request": { "method": "GET", "url": "{{baseUrl}}/autores" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 OK', () => { pm.response.to.have.status(200); });",
+            "pm.test('Respuesta es un array', () => { pm.expect(pm.response.json()).to.be.an('array'); });",
+            "pm.test('Estructura del autor es correcta', () => {",
+            "    const autores = pm.response.json();",
+            "    if (autores.length > 0) {",
+            "        pm.expect(autores[0]).to.have.property('id_autor').that.is.a('number');",
+            "        pm.expect(autores[0]).to.have.property('nombre').that.is.a('string');",
+            "    }",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "2. Crear un nuevo autor",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/autores",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Autor Test\",\n  \"nacionalidad\": \"Ecuatoriana\"\n}" }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": { "exec": [
+                "pm.collectionVariables.set('ts', Date.now());"
+              ]}
+            },
+            {
+              "listen": "test",
+              "script": { "exec": [
+                "pm.test('Status 201 Created', () => { pm.response.to.have.status(201); });",
+                "pm.test('Respuesta tiene estructura correcta', () => {",
+                "    const autor = pm.response.json();",
+                "    pm.expect(autor).to.have.property('id_autor').that.is.a('number');",
+                "    pm.expect(autor).to.have.property('nombre').that.is.a('string');",
+                "    pm.collectionVariables.set('id_autor', autor.id_autor);",
+                "});"
+              ]}
+            }
+          ]
+        },
+        {
+          "name": "3. Obtener autor por ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/autores/{{id_autor}}" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 OK', () => { pm.response.to.have.status(200); });",
+            "pm.test('Estructura del autor es correcta', () => {",
+            "    const autor = pm.response.json();",
+            "    pm.expect(autor).to.have.property('id_autor').that.is.a('number');",
+            "    pm.expect(autor).to.have.property('nombre').that.is.a('string');",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "4. Actualizar autor por ID",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/autores/{{id_autor}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Autor Test Actualizado\",\n  \"nacionalidad\": \"Ecuatoriana\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 OK', () => { pm.response.to.have.status(200); });",
+            "pm.test('Estructura actualizada es correcta', () => {",
+            "    const autor = pm.response.json();",
+            "    pm.expect(autor).to.have.property('id_autor').that.is.a('number');",
+            "    pm.expect(autor).to.have.property('nombre').that.is.a('string');",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "5. Listar libros de un autor",
+          "request": { "method": "GET", "url": "{{baseUrl}}/autores/{{id_autor}}/libros" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 OK', () => { pm.response.to.have.status(200); });",
+            "pm.test('Respuesta es un array', () => { pm.expect(pm.response.json()).to.be.an('array'); });",
+            "pm.test('Estructura libro-autor es correcta', () => {",
+            "    const libros = pm.response.json();",
+            "    if (libros.length > 0) {",
+            "        pm.expect(libros[0]).to.have.property('id_libro').that.is.a('number');",
+            "        pm.expect(libros[0]).to.have.property('id_autor').that.is.a('number');",
+            "    }",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "6. Eliminar autor por ID",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/autores/{{id_autor}}" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 204 No Content', () => { pm.response.to.have.status(204); });"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Libros",
+      "item": [
+        {
+          "name": "0. Setup - Crear autor para libros",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/autores",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Autor Libros Setup\",\n  \"nacionalidad\": \"Ecuatoriana\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Setup autor para libros OK', () => { pm.response.to.have.status(201); });",
+            "pm.collectionVariables.set('id_autor_libros', pm.response.json().id_autor);"
+          ]}}]
+        },
+        {
+          "name": "1. Listar todos los libros",
+          "request": { "method": "GET", "url": "{{baseUrl}}/libros" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 OK', () => { pm.response.to.have.status(200); });",
+            "pm.test('Respuesta es un array', () => { pm.expect(pm.response.json()).to.be.an('array'); });",
+            "pm.test('Estructura del libro es correcta', () => {",
+            "    const libros = pm.response.json();",
+            "    if (libros.length > 0) {",
+            "        const libro = libros[0];",
+            "        pm.expect(libro).to.have.property('id_libro').that.is.a('number');",
+            "        pm.expect(libro).to.have.property('isbn').that.is.a('string');",
+            "        pm.expect(libro).to.have.property('titulo').that.is.a('string');",
+            "        pm.expect(libro).to.have.property('stock_total').that.is.a('number');",
+            "        pm.expect(libro).to.have.property('stock_disponible').that.is.a('number');",
+            "    }",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "2. Crear un nuevo libro",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/libros",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"isbn\": \"ISBN-{{$timestamp}}\",\n  \"titulo\": \"Libro Test\",\n  \"anio_publicacion\": 2024,\n  \"genero\": \"Test\",\n  \"stock_total\": 5,\n  \"stock_disponible\": 5\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201 Created', () => { pm.response.to.have.status(201); });",
+            "pm.test('Estructura del libro creado es correcta', () => {",
+            "    const libro = pm.response.json();",
+            "    pm.expect(libro).to.have.property('id_libro').that.is.a('number');",
+            "    pm.expect(libro).to.have.property('isbn').that.is.a('string');",
+            "    pm.expect(libro).to.have.property('titulo').that.is.a('string');",
+            "    pm.expect(libro).to.have.property('stock_total').that.is.a('number');",
+            "    pm.expect(libro).to.have.property('stock_disponible').that.is.a('number');",
+            "    pm.collectionVariables.set('id_libro', libro.id_libro);",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "3. Obtener libro por ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/libros/{{id_libro}}" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 OK', () => { pm.response.to.have.status(200); });",
+            "pm.test('Estructura del libro es correcta', () => {",
+            "    const libro = pm.response.json();",
+            "    pm.expect(libro).to.have.property('id_libro').that.is.a('number');",
+            "    pm.expect(libro).to.have.property('isbn').that.is.a('string');",
+            "    pm.expect(libro).to.have.property('titulo').that.is.a('string');",
+            "    pm.expect(libro).to.have.property('stock_total').that.is.a('number');",
+            "    pm.expect(libro).to.have.property('stock_disponible').that.is.a('number');",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "4. Actualizar libro por ID",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/libros/{{id_libro}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"isbn\": \"ISBN-{{$timestamp}}\",\n  \"titulo\": \"Libro Test Actualizado\",\n  \"anio_publicacion\": 2024,\n  \"genero\": \"Test\",\n  \"stock_total\": 5,\n  \"stock_disponible\": 5\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 OK', () => { pm.response.to.have.status(200); });",
+            "pm.test('Estructura actualizada es correcta', () => {",
+            "    const libro = pm.response.json();",
+            "    pm.expect(libro).to.have.property('id_libro').that.is.a('number');",
+            "    pm.expect(libro).to.have.property('isbn').that.is.a('string');",
+            "    pm.expect(libro).to.have.property('titulo').that.is.a('string');",
+            "    pm.expect(libro).to.have.property('stock_total').that.is.a('number');",
+            "    pm.expect(libro).to.have.property('stock_disponible').that.is.a('number');",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "5. Listar autores de un libro",
+          "request": { "method": "GET", "url": "{{baseUrl}}/libros/{{id_libro}}/autores" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 OK', () => { pm.response.to.have.status(200); });",
+            "pm.test('Respuesta es un array', () => { pm.expect(pm.response.json()).to.be.an('array'); });",
+            "pm.test('Estructura libro-autor es correcta', () => {",
+            "    const autores = pm.response.json();",
+            "    if (autores.length > 0) {",
+            "        pm.expect(autores[0]).to.have.property('id_libro').that.is.a('number');",
+            "        pm.expect(autores[0]).to.have.property('id_autor').that.is.a('number');",
+            "    }",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "6. Asociar autor a un libro",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/libros/{{id_libro}}/autores",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"id_autor\": {{id_autor_libros}}\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201 Created', () => { pm.response.to.have.status(201); });",
+            "pm.test('Estructura de asociación es correcta', () => {",
+            "    const asociacion = pm.response.json();",
+            "    pm.expect(asociacion).to.have.property('id_libro').that.is.a('number');",
+            "    pm.expect(asociacion).to.have.property('id_autor').that.is.a('number');",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "7. Eliminar asociación libro-autor",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/libros/{{id_libro}}/autores/{{id_autor_libros}}" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 204 No Content', () => { pm.response.to.have.status(204); });"
+          ]}}]
+        },
+        {
+          "name": "8. Eliminar libro por ID",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/libros/{{id_libro}}" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 204 No Content', () => { pm.response.to.have.status(204); });"
+          ]}}]
+        },
+        {
+          "name": "9. Teardown - Eliminar autor de libros",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/autores/{{id_autor_libros}}" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Teardown autor libros OK', () => { pm.response.to.have.status(204); });"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "1. Listar todos los usuarios",
+          "request": { "method": "GET", "url": "{{baseUrl}}/usuarios" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 OK', () => { pm.response.to.have.status(200); });",
+            "pm.test('Respuesta es un array', () => { pm.expect(pm.response.json()).to.be.an('array'); });",
+            "pm.test('Estructura del usuario es correcta', () => {",
+            "    const usuarios = pm.response.json();",
+            "    if (usuarios.length > 0) {",
+            "        const u = usuarios[0];",
+            "        pm.expect(u).to.have.property('id_usuario').that.is.a('number');",
+            "        pm.expect(u).to.have.property('nombre').that.is.a('string');",
+            "        pm.expect(u).to.have.property('email').that.is.a('string');",
+            "        pm.expect(u).to.have.property('estado');",
+            "        pm.expect(['activo', 'suspendido']).to.include(u.estado);",
+            "    }",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "2. Crear un nuevo usuario",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/usuarios",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Usuario Test\",\n  \"email\": \"user_{{$timestamp}}@test.com\",\n  \"telefono\": \"0990000001\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201 Created', () => { pm.response.to.have.status(201); });",
+            "pm.test('Estructura del usuario creado es correcta', () => {",
+            "    const usuario = pm.response.json();",
+            "    pm.expect(usuario).to.have.property('id_usuario').that.is.a('number');",
+            "    pm.expect(usuario).to.have.property('nombre').that.is.a('string');",
+            "    pm.expect(usuario).to.have.property('email').that.is.a('string');",
+            "    pm.expect(usuario).to.have.property('estado');",
+            "    pm.expect(['activo', 'suspendido']).to.include(usuario.estado);",
+            "    pm.collectionVariables.set('id_usuario', usuario.id_usuario);",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "3. Obtener usuario por ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/usuarios/{{id_usuario}}" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 OK', () => { pm.response.to.have.status(200); });",
+            "pm.test('Estructura del usuario es correcta', () => {",
+            "    const usuario = pm.response.json();",
+            "    pm.expect(usuario).to.have.property('id_usuario').that.is.a('number');",
+            "    pm.expect(usuario).to.have.property('nombre').that.is.a('string');",
+            "    pm.expect(usuario).to.have.property('email').that.is.a('string');",
+            "    pm.expect(usuario).to.have.property('estado');",
+            "    pm.expect(['activo', 'suspendido']).to.include(usuario.estado);",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "4. Actualizar usuario por ID",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/usuarios/{{id_usuario}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Usuario Test Actualizado\",\n  \"email\": \"user_{{$timestamp}}@test.com\",\n  \"telefono\": \"0990000001\",\n  \"estado\": \"activo\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 OK', () => { pm.response.to.have.status(200); });",
+            "pm.test('Estructura actualizada es correcta', () => {",
+            "    const usuario = pm.response.json();",
+            "    pm.expect(usuario).to.have.property('id_usuario').that.is.a('number');",
+            "    pm.expect(usuario).to.have.property('nombre').that.is.a('string');",
+            "    pm.expect(usuario).to.have.property('email').that.is.a('string');",
+            "    pm.expect(usuario).to.have.property('estado');",
+            "    pm.expect(['activo', 'suspendido']).to.include(usuario.estado);",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "5. Eliminar usuario por ID",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/usuarios/{{id_usuario}}" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 204 No Content', () => { pm.response.to.have.status(204); });"
+          ]}}]
+        }
+      ]
+    },
+    {
+      "name": "Préstamos",
+      "item": [
+        {
+          "name": "0a. Setup - Crear autor para préstamo",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/autores",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Autor Prestamo Setup\",\n  \"nacionalidad\": \"Ecuatoriana\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Setup autor OK', () => { pm.response.to.have.status(201); });",
+            "pm.collectionVariables.set('id_autor_prestamos', pm.response.json().id_autor);"
+          ]}}]
+        },
+        {
+          "name": "0b. Setup - Crear libro para préstamo",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/libros",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"isbn\": \"ISBN-PREST-{{$timestamp}}\",\n  \"titulo\": \"Libro Prestamo Setup\",\n  \"anio_publicacion\": 2024,\n  \"genero\": \"Test\",\n  \"stock_total\": 5,\n  \"stock_disponible\": 5\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Setup libro OK', () => { pm.response.to.have.status(201); });",
+            "pm.collectionVariables.set('id_libro_prestamos', pm.response.json().id_libro);"
+          ]}}]
+        },
+        {
+          "name": "0c. Setup - Crear usuario para préstamo",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/usuarios",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Usuario Prestamo Setup\",\n  \"email\": \"prest_{{$timestamp}}@test.com\",\n  \"telefono\": \"0990000002\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Setup usuario OK', () => { pm.response.to.have.status(201); });",
+            "pm.collectionVariables.set('id_usuario_prestamos', pm.response.json().id_usuario);"
+          ]}}]
+        },
+        {
+          "name": "1. Listar todos los préstamos",
+          "request": { "method": "GET", "url": "{{baseUrl}}/prestamos" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 OK', () => { pm.response.to.have.status(200); });",
+            "pm.test('Respuesta es un array', () => { pm.expect(pm.response.json()).to.be.an('array'); });",
+            "pm.test('Estructura del préstamo es correcta', () => {",
+            "    const prestamos = pm.response.json();",
+            "    if (prestamos.length > 0) {",
+            "        const p = prestamos[0];",
+            "        pm.expect(p).to.have.property('id_prestamo').that.is.a('number');",
+            "        pm.expect(p).to.have.property('id_libro').that.is.a('number');",
+            "        pm.expect(p).to.have.property('id_usuario').that.is.a('number');",
+            "        pm.expect(p).to.have.property('fecha_prestamo').that.is.a('string');",
+            "        pm.expect(p).to.have.property('fecha_devolucion_esperada').that.is.a('string');",
+            "        pm.expect(p).to.have.property('estado');",
+            "        pm.expect(['activo', 'devuelto', 'vencido']).to.include(p.estado);",
+            "    }",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "2. Registrar un nuevo préstamo",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/prestamos",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"id_libro\": {{id_libro_prestamos}},\n  \"id_usuario\": {{id_usuario_prestamos}},\n  \"fecha_prestamo\": \"2026-04-19\",\n  \"fecha_devolucion_esperada\": \"2026-05-03\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201 Created', () => { pm.response.to.have.status(201); });",
+            "pm.test('Estructura del préstamo creado es correcta', () => {",
+            "    const prestamo = pm.response.json();",
+            "    pm.expect(prestamo).to.have.property('id_prestamo').that.is.a('number');",
+            "    pm.expect(prestamo).to.have.property('id_libro').that.is.a('number');",
+            "    pm.expect(prestamo).to.have.property('id_usuario').that.is.a('number');",
+            "    pm.expect(prestamo).to.have.property('fecha_prestamo').that.is.a('string');",
+            "    pm.expect(prestamo).to.have.property('fecha_devolucion_esperada').that.is.a('string');",
+            "    pm.expect(prestamo).to.have.property('estado');",
+            "    pm.expect(['activo', 'devuelto', 'vencido']).to.include(prestamo.estado);",
+            "    pm.collectionVariables.set('id_prestamo', prestamo.id_prestamo);",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "3. Obtener préstamo por ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/prestamos/{{id_prestamo}}" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 OK', () => { pm.response.to.have.status(200); });",
+            "pm.test('Estructura del préstamo es correcta', () => {",
+            "    const prestamo = pm.response.json();",
+            "    pm.expect(prestamo).to.have.property('id_prestamo').that.is.a('number');",
+            "    pm.expect(prestamo).to.have.property('id_libro').that.is.a('number');",
+            "    pm.expect(prestamo).to.have.property('id_usuario').that.is.a('number');",
+            "    pm.expect(prestamo).to.have.property('estado');",
+            "    pm.expect(['activo', 'devuelto', 'vencido']).to.include(prestamo.estado);",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "4. Actualizar préstamo (registrar devolución)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/prestamos/{{id_prestamo}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"fecha_devolucion_real\": \"2026-04-25\",\n  \"estado\": \"devuelto\"\n}" }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200 OK', () => { pm.response.to.have.status(200); });",
+            "pm.test('Estructura actualizada es correcta', () => {",
+            "    const prestamo = pm.response.json();",
+            "    pm.expect(prestamo).to.have.property('id_prestamo').that.is.a('number');",
+            "    pm.expect(prestamo).to.have.property('estado');",
+            "    pm.expect(['activo', 'devuelto', 'vencido']).to.include(prestamo.estado);",
+            "});"
+          ]}}]
+        },
+        {
+          "name": "5. Eliminar préstamo por ID",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/prestamos/{{id_prestamo}}" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 204 No Content', () => { pm.response.to.have.status(204); });"
+          ]}}]
+        },
+        {
+          "name": "6. Teardown - Eliminar libro del préstamo",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/libros/{{id_libro_prestamos}}" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Teardown libro OK', () => { pm.response.to.have.status(204); });"
+          ]}}]
+        },
+        {
+          "name": "7. Teardown - Eliminar usuario del préstamo",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/usuarios/{{id_usuario_prestamos}}" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Teardown usuario OK', () => { pm.response.to.have.status(204); });"
+          ]}}]
+        },
+        {
+          "name": "8. Teardown - Eliminar autor del préstamo",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/autores/{{id_autor_prestamos}}" },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Teardown autor OK', () => { pm.response.to.have.status(204); });"
+          ]}}]
+        }
+      ]
+    }
+  ]
+}
