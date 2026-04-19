@@ -1,0 +1,901 @@
+{
+  "info": {
+    "name": "Biblioteca API - Contract Tests",
+    "_postman_id": "biblioteca-api-contract-v1",
+    "description": "Colección con tests de contrato para Biblioteca API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "id_autor",
+      "value": ""
+    },
+    {
+      "key": "id_libro",
+      "value": ""
+    },
+    {
+      "key": "id_usuario",
+      "value": ""
+    },
+    {
+      "key": "id_prestamo",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Autores",
+      "item": [
+        {
+          "name": "1. Listar todos los autores",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/autores"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Responde con array', () => { pm.expect(pm.response.json()).to.be.an('array'); });",
+                  "pm.test('Campos del contrato en cada autor', () => {",
+                  "  const arr = pm.response.json();",
+                  "  if (arr.length > 0) {",
+                  "    pm.expect(arr[0]).to.have.property('id_autor');",
+                  "    pm.expect(arr[0]).to.have.property('nombre');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Crear un nuevo autor",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/autores",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombre\": \"Octavio Paz\", \"nacionalidad\": \"Mexicana\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Campos del contrato presentes', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id_autor');",
+                  "  pm.expect(json).to.have.property('nombre');",
+                  "  pm.expect(json.nombre).to.eql('Octavio Paz');",
+                  "  pm.expect(json.nacionalidad).to.eql('Mexicana');",
+                  "});",
+                  "pm.test('id_autor es número', () => { pm.expect(pm.response.json().id_autor).to.be.a('number'); });",
+                  "pm.collectionVariables.set('id_autor', pm.response.json().id_autor);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Obtener autor por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/autores/{{id_autor}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Campos del contrato exactos', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id_autor');",
+                  "  pm.expect(json).to.have.property('nombre');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Obtener autor inexistente (404)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/autores/99999"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404 para autor inexistente', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Actualizar autor por ID",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/autores/{{id_autor}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombre\": \"Octavio Paz Lozano\", \"nacionalidad\": \"Mexicana\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Nombre actualizado correctamente', () => { pm.expect(pm.response.json().nombre).to.eql('Octavio Paz Lozano'); });",
+                  "pm.test('Campos del contrato presentes', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id_autor');",
+                  "  pm.expect(json).to.have.property('nombre');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Listar libros de un autor",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/autores/{{id_autor}}/libros"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Responde con array', () => { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. Eliminar autor por ID",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/autores/{{id_autor}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));",
+                  "pm.test('Body vacío en DELETE', () => { pm.expect(pm.response.text()).to.be.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8. Verificar autor eliminado (404)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/autores/{{id_autor}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404 tras eliminar', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Libros",
+      "item": [
+        {
+          "name": "1. Listar todos los libros",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/libros"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Responde con array', () => { pm.expect(pm.response.json()).to.be.an('array'); });",
+                  "pm.test('Cada libro tiene campos del contrato', () => {",
+                  "  const arr = pm.response.json();",
+                  "  if (arr.length > 0) {",
+                  "    pm.expect(arr[0]).to.have.property('id_libro');",
+                  "    pm.expect(arr[0]).to.have.property('isbn');",
+                  "    pm.expect(arr[0]).to.have.property('titulo');",
+                  "    pm.expect(arr[0]).to.have.property('stock_total');",
+                  "    pm.expect(arr[0]).to.have.property('stock_disponible');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Crear un nuevo libro",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/libros",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"isbn\": \"978-TEST-00001\", \"titulo\": \"El laberinto de la soledad\", \"anio_publicacion\": 1950, \"genero\": \"Ensayo\", \"stock_total\": 3, \"stock_disponible\": 3}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Campos del contrato presentes', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id_libro');",
+                  "  pm.expect(json).to.have.property('isbn');",
+                  "  pm.expect(json).to.have.property('titulo');",
+                  "  pm.expect(json).to.have.property('stock_total');",
+                  "  pm.expect(json).to.have.property('stock_disponible');",
+                  "});",
+                  "pm.test('ISBN correcto', () => { pm.expect(pm.response.json().isbn).to.eql('978-TEST-00001'); });",
+                  "pm.collectionVariables.set('id_libro', pm.response.json().id_libro);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Crear libro duplicado (409)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/libros",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"isbn\": \"978-TEST-00001\", \"titulo\": \"Duplicado\", \"stock_total\": 1, \"stock_disponible\": 1}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409 para ISBN duplicado', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Obtener libro por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/libros/{{id_libro}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Campos del contrato exactos', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id_libro');",
+                  "  pm.expect(json).to.have.property('isbn');",
+                  "  pm.expect(json).to.have.property('titulo');",
+                  "  pm.expect(json).to.have.property('stock_total');",
+                  "  pm.expect(json).to.have.property('stock_disponible');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Actualizar libro por ID",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/libros/{{id_libro}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"isbn\": \"978-TEST-00001\", \"titulo\": \"El laberinto de la soledad (Ed. revisada)\", \"anio_publicacion\": 1950, \"genero\": \"Ensayo\", \"stock_total\": 5, \"stock_disponible\": 5}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Título actualizado', () => { pm.expect(pm.response.json().titulo).to.include('revisada'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Crear autor para asociar",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/autores",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombre\": \"Autor Para Libro\", \"nacionalidad\": \"Ecuatoriana\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('id_autor', pm.response.json().id_autor);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. Asociar autor a libro",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/libros/{{id_libro}}/autores",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id_autor\": {{id_autor}}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Campos LibroAutor del contrato', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id_libro');",
+                  "  pm.expect(json).to.have.property('id_autor');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8. Asociar autor duplicado (409)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/libros/{{id_libro}}/autores",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id_autor\": {{id_autor}}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409 autor ya asociado', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "9. Listar autores de un libro",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/libros/{{id_libro}}/autores"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Responde con array', () => { pm.expect(pm.response.json()).to.be.an('array'); });",
+                  "pm.test('Contiene la asociación creada', () => {",
+                  "  const arr = pm.response.json();",
+                  "  pm.expect(arr.length).to.be.greaterThan(0);",
+                  "  pm.expect(arr[0]).to.have.property('id_libro');",
+                  "  pm.expect(arr[0]).to.have.property('id_autor');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "10. Eliminar asociación libro-autor",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/libros/{{id_libro}}/autores/{{id_autor}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "11. Eliminar libro por ID",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/libros/{{id_libro}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));",
+                  "pm.test('Body vacío', () => { pm.expect(pm.response.text()).to.be.empty; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "1. Listar todos los usuarios",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/usuarios"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Responde con array', () => { pm.expect(pm.response.json()).to.be.an('array'); });",
+                  "pm.test('Campos del contrato en cada usuario', () => {",
+                  "  const arr = pm.response.json();",
+                  "  if (arr.length > 0) {",
+                  "    pm.expect(arr[0]).to.have.property('id_usuario');",
+                  "    pm.expect(arr[0]).to.have.property('nombre');",
+                  "    pm.expect(arr[0]).to.have.property('email');",
+                  "    pm.expect(arr[0]).to.have.property('estado');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Crear un nuevo usuario",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/usuarios",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombre\": \"Luis Andrade\", \"email\": \"luis.andrade@test.com\", \"telefono\": \"0998765432\", \"estado\": \"activo\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Campos del contrato presentes', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id_usuario');",
+                  "  pm.expect(json).to.have.property('nombre');",
+                  "  pm.expect(json).to.have.property('email');",
+                  "  pm.expect(json).to.have.property('estado');",
+                  "});",
+                  "pm.test('Estado válido del contrato', () => { pm.expect(['activo','suspendido']).to.include(pm.response.json().estado); });",
+                  "pm.collectionVariables.set('id_usuario', pm.response.json().id_usuario);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Crear usuario duplicado (409)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/usuarios",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombre\": \"Otro Nombre\", \"email\": \"luis.andrade@test.com\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409 para email duplicado', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Obtener usuario por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/usuarios/{{id_usuario}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Estructura del contrato', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id_usuario');",
+                  "  pm.expect(json).to.have.property('nombre');",
+                  "  pm.expect(json).to.have.property('email');",
+                  "  pm.expect(json).to.have.property('estado');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Actualizar usuario por ID",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/usuarios/{{id_usuario}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombre\": \"Luis Andrade V.\", \"email\": \"luis.andrade@test.com\", \"estado\": \"suspendido\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Estado actualizado a suspendido', () => { pm.expect(pm.response.json().estado).to.eql('suspendido'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Obtener usuario inexistente (404)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/usuarios/99999"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. Eliminar usuario por ID",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/usuarios/{{id_usuario}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));",
+                  "pm.test('Body vacío', () => { pm.expect(pm.response.text()).to.be.empty; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Préstamos",
+      "item": [
+        {
+          "name": "0. Setup - Crear usuario para préstamo",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/usuarios",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombre\": \"Usuario Prestamo\", \"email\": \"prestamo.test@test.com\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('id_usuario', pm.response.json().id_usuario);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1. Listar todos los préstamos",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/prestamos"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Responde con array', () => { pm.expect(pm.response.json()).to.be.an('array'); });",
+                  "pm.test('Campos del contrato en cada préstamo', () => {",
+                  "  const arr = pm.response.json();",
+                  "  if (arr.length > 0) {",
+                  "    pm.expect(arr[0]).to.have.property('id_prestamo');",
+                  "    pm.expect(arr[0]).to.have.property('id_libro');",
+                  "    pm.expect(arr[0]).to.have.property('id_usuario');",
+                  "    pm.expect(arr[0]).to.have.property('fecha_prestamo');",
+                  "    pm.expect(arr[0]).to.have.property('fecha_devolucion_esperada');",
+                  "    pm.expect(arr[0]).to.have.property('fecha_devolucion_real');",
+                  "    pm.expect(arr[0]).to.have.property('estado');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Registrar nuevo préstamo",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/prestamos",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id_libro\": 1, \"id_usuario\": {{id_usuario}}, \"fecha_prestamo\": \"2026-04-19\", \"fecha_devolucion_esperada\": \"2026-05-03\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Campos del contrato presentes', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id_prestamo');",
+                  "  pm.expect(json).to.have.property('id_libro');",
+                  "  pm.expect(json).to.have.property('id_usuario');",
+                  "  pm.expect(json).to.have.property('fecha_prestamo');",
+                  "  pm.expect(json).to.have.property('fecha_devolucion_esperada');",
+                  "  pm.expect(json).to.have.property('fecha_devolucion_real');",
+                  "  pm.expect(json).to.have.property('estado');",
+                  "});",
+                  "pm.test('Estado inicial es activo', () => { pm.expect(pm.response.json().estado).to.eql('activo'); });",
+                  "pm.test('fecha_devolucion_real es null', () => { pm.expect(pm.response.json().fecha_devolucion_real).to.be.null; });",
+                  "pm.collectionVariables.set('id_prestamo', pm.response.json().id_prestamo);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Obtener préstamo por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/prestamos/{{id_prestamo}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Estructura completa del contrato', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id_prestamo');",
+                  "  pm.expect(json).to.have.property('id_libro');",
+                  "  pm.expect(json).to.have.property('id_usuario');",
+                  "  pm.expect(json).to.have.property('fecha_prestamo');",
+                  "  pm.expect(json).to.have.property('fecha_devolucion_esperada');",
+                  "  pm.expect(json).to.have.property('fecha_devolucion_real');",
+                  "  pm.expect(json).to.have.property('estado');",
+                  "});",
+                  "pm.test('Estado es enum válido', () => { pm.expect(['activo','devuelto','vencido']).to.include(pm.response.json().estado); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Registrar devolución (PUT)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/prestamos/{{id_prestamo}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"fecha_devolucion_real\": \"2026-04-25\", \"estado\": \"devuelto\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Estado actualizado a devuelto', () => { pm.expect(pm.response.json().estado).to.eql('devuelto'); });",
+                  "pm.test('fecha_devolucion_real registrada', () => { pm.expect(pm.response.json().fecha_devolucion_real).to.eql('2026-04-25'); });",
+                  "pm.test('Campos del contrato completos', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('id_prestamo');",
+                  "  pm.expect(json).to.have.property('estado');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Obtener préstamo inexistente (404)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/prestamos/99999"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Eliminar préstamo por ID",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/prestamos/{{id_prestamo}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));",
+                  "pm.test('Body vacío', () => { pm.expect(pm.response.text()).to.be.empty; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
